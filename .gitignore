@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+backend/.env
+Fron-end/.env
+Fron-end/.env.*
+!Fron-end/.env.example
+**/node_modules/
+**/dist/
+*.tsbuildinfo
+Fron-end/.next/
+backend/coverage/

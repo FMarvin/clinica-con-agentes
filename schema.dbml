@@ -1,0 +1,340 @@
+Table enum_roles {
+  id          int          [pk, increment]
+  code        varchar(30)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_document_types {
+  id          int          [pk, increment]
+  code        varchar(30)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_genders {
+  id          int          [pk, increment]
+  code        varchar(20)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_blood_types {
+  id          int          [pk, increment]
+  code        varchar(5)   [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_severities {
+  id          int          [pk, increment]
+  code        varchar(20)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_prescription_statuses {
+  id          int          [pk, increment]
+  code        varchar(20)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_appointment_statuses {
+  id          int          [pk, increment]
+  code        varchar(20)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_alert_types {
+  id          int          [pk, increment]
+  code        varchar(30)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_alert_severities {
+  id          int          [pk, increment]
+  code        varchar(20)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_product_types {
+  id          int          [pk, increment]
+  code        varchar(20)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table enum_movement_types {
+  id          int          [pk, increment]
+  code        varchar(20)  [unique, not null]
+  name        varchar(80)  [not null]
+  description varchar(255)
+  is_active   boolean      [default: true]
+  sort_order  int          [default: 0]
+  created_at  timestamp    [default: `now()`]
+}
+
+Table users {
+  id            int           [pk, increment]
+  email         varchar(150)  [unique, not null]
+  password_hash varchar(255)  [not null]
+  full_name     varchar(150)  [not null]
+  role_id       int           [not null, ref: > enum_roles.id]
+  phone         varchar(30)
+  is_active     boolean       [default: true]
+  last_login_at datetime
+  password_changed_at datetime
+  deleted_at    timestamp
+  created_by    int           [ref: > users.id]
+  updated_by    int           [ref: > users.id]
+  created_at    timestamp     [default: `now()`]
+  updated_at    timestamp     [default: `now()`]
+}
+
+Table patients {
+  id               int           [pk, increment]
+  document_type_id int           [not null, ref: > enum_document_types.id]
+  document_number  varchar(30)   [unique, not null]
+  first_name       varchar(100)  [not null]
+  last_name        varchar(100)  [not null]
+  birth_date       date          [not null]
+  gender_id        int           [ref: > enum_genders.id]
+  phone            varchar(30)
+  email            varchar(150)
+  address          varchar(255)
+  blood_type_id    int           [ref: > enum_blood_types.id]
+  allergies        text
+  is_chronic       boolean       [default: false]
+  is_priority      boolean       [default: false]
+  is_deceased      boolean       [default: false]
+  deceased_at      datetime
+  notes            text
+  created_by       int           [ref: > users.id]
+  updated_by       int           [ref: > users.id]
+  created_at       timestamp     [default: `now()`]
+  updated_at       timestamp     [default: `now()`]
+  deleted_at       timestamp
+
+  indexes {
+    (document_number)
+    (is_chronic, is_deceased)
+    (is_priority)
+  }
+}
+
+Table chronic_conditions {
+  id           int          [pk, increment]
+  patient_id   int          [not null, ref: > patients.id]
+  name         varchar(150) [not null]
+  diagnosed_at date
+  severity_id  int          [ref: > enum_severities.id]
+  notes        text
+  created_by   int          [ref: > users.id]
+  updated_by   int          [ref: > users.id]
+  created_at   timestamp    [default: `now()`]
+  updated_at   timestamp    [default: `now()`]
+
+  indexes {
+    (patient_id)
+  }
+}
+
+Table medical_records {
+  id                int          [pk, increment]
+  patient_id        int          [not null, ref: > patients.id]
+  doctor_id         int          [not null, ref: > users.id]
+  appointment_id    int          [ref: > appointments.id]
+  consultation_date datetime     [not null]
+  reason            varchar(255) [not null]
+  diagnosis         text
+  treatment         text
+  notes             text
+  created_by        int          [ref: > users.id]
+  updated_by        int          [ref: > users.id]
+  created_at        timestamp    [default: `now()`]
+  updated_at        timestamp    [default: `now()`]
+
+  indexes {
+    (patient_id, consultation_date)
+    (doctor_id)
+  }
+}
+
+Table prescriptions {
+  id                int          [pk, increment]
+  medical_record_id int          [not null, ref: > medical_records.id]
+  patient_id        int          [not null, ref: > patients.id]
+  doctor_id         int          [not null, ref: > users.id]
+  code              varchar(50)  [unique]
+  issued_at         datetime     [default: `now()`]
+  status_id         int          [not null, ref: > enum_prescription_statuses.id]
+  notes             text
+  created_by        int          [ref: > users.id]
+  updated_by        int          [ref: > users.id]
+  created_at        timestamp    [default: `now()`]
+  updated_at        timestamp    [default: `now()`]
+
+  indexes {
+    (patient_id)
+    (doctor_id)
+  }
+}
+
+Table prescription_items {
+  id              int          [pk, increment]
+  prescription_id int          [not null, ref: > prescriptions.id]
+  product_id      int          [not null, ref: > products.id]
+  dosage          varchar(100) [not null]
+  frequency       varchar(100) [not null]
+  duration        varchar(50)
+  quantity        int          [default: 1]
+  instructions    text
+  created_by      int          [ref: > users.id]
+  updated_by      int          [ref: > users.id]
+  created_at      timestamp    [default: `now()`]
+  updated_at      timestamp    [default: `now()`]
+
+  indexes {
+    (prescription_id)
+  }
+}
+
+Table appointments {
+  id               int          [pk, increment]
+  patient_id       int          [not null, ref: > patients.id]
+  doctor_id        int          [not null, ref: > users.id]
+  scheduled_at     datetime     [not null]
+  duration_minutes int          [default: 30]
+  status_id        int          [not null, ref: > enum_appointment_statuses.id]
+  reason           varchar(255)
+  notes            text
+  created_by       int          [ref: > users.id]
+  updated_by       int          [ref: > users.id]
+  created_at       timestamp    [default: `now()`]
+  updated_at       timestamp    [default: `now()`]
+
+  indexes {
+    (patient_id, scheduled_at)
+    (doctor_id, scheduled_at)
+  }
+}
+
+Table alerts {
+  id           int          [pk, increment]
+  patient_id   int          [not null, ref: > patients.id]
+  type_id      int          [not null, ref: > enum_alert_types.id]
+  severity_id  int          [not null, ref: > enum_alert_severities.id]
+  title        varchar(150) [not null]
+  message      text         [not null]
+  is_read      boolean      [default: false]
+  triggered_by int          [ref: > users.id]
+  read_at      datetime
+  created_by   int          [ref: > users.id]
+  updated_by   int          [ref: > users.id]
+  created_at   timestamp    [default: `now()`]
+  updated_at   timestamp    [default: `now()`]
+
+  indexes {
+    (patient_id, is_read)
+    (severity_id)
+  }
+}
+
+Table products {
+  id                    int           [pk, increment]
+  sku                   varchar(50)   [unique, not null]
+  name                  varchar(200)  [not null]
+  description           text
+  type_id               int           [not null, ref: > enum_product_types.id]
+  category              varchar(100)
+  laboratory            varchar(150)
+  unit                  varchar(30)
+  stock                 int           [default: 0]
+  min_stock             int           [default: 0]
+  requires_prescription boolean       [default: false]
+  expiration_date       date
+  price                 decimal(10,2)
+  is_active             boolean       [default: true]
+  created_by            int           [ref: > users.id]
+  updated_by            int           [ref: > users.id]
+  created_at            timestamp     [default: `now()`]
+  updated_at            timestamp     [default: `now()`]
+
+  indexes {
+    (type_id)
+    (category)
+    (is_active)
+  }
+}
+
+Table product_movements {
+  id           int          [pk, increment]
+  product_id   int          [not null, ref: > products.id]
+  type_id      int          [not null, ref: > enum_movement_types.id]
+  quantity     int          [not null]
+  reason       varchar(255)
+  reference_id int
+  performed_by int          [ref: > users.id]
+  created_by   int          [ref: > users.id]
+  updated_by   int          [ref: > users.id]
+  created_at   timestamp    [default: `now()`]
+  updated_at   timestamp    [default: `now()`]
+
+  indexes {
+    (product_id, created_at)
+  }
+}
+
+Table audit_logs {
+  id         bigint       [pk, increment]
+  user_id    int          [ref: > users.id]
+  action     varchar(20)  [not null]
+  entity     varchar(80)  [not null]
+  entity_id  varchar(50)  [not null]
+  old_values json
+  new_values json
+  ip_address varchar(45)
+  user_agent varchar(255)
+  created_at timestamp    [default: `now()`]
+
+  indexes {
+    (entity, entity_id)
+    (user_id)
+    (created_at)
+    (action)
+  }
+}

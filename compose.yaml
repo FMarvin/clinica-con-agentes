@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-clinica}
+      MYSQL_USER: ${DB_USERNAME:?Define DB_USERNAME en backend/.env}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en backend/.env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD en backend/.env}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - clinica_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  clinica_mysql_data:
